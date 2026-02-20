@@ -1,5 +1,112 @@
+############################################
+# Secrets / env
+############################################
 .env
 .env.*
-config/openclaw.json
-config/openclaw.json.bak*
-config/logs/*
+!.env.example
+*.secret
+*.secrets
+secrets/
+**/secrets/
+**/SECRETS.md
+
+############################################
+# OS / editor / misc
+############################################
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+############################################
+# Logs / runtime
+############################################
+*.log
+logs/
+**/logs/
+tmp/
+**/tmp/
+*.pid
+
+############################################
+# Language/tool caches
+############################################
+node_modules/
+.pnpm-store/
+**/.pnpm-store/
+**/.npm/
+**/.yarn/
+**/.cache/
+
+.gradle/
+**/.gradle/
+.m2/
+**/.m2/
+
+############################################
+# Build outputs / artifacts
+############################################
+artifacts/
+**/artifacts/
+dist/
+build/
+out/
+target/
+*.apk
+*.aab
+*.aar
+*.jar
+*.zip
+*.tar
+*.tar.gz
+
+############################################
+# OpenClaw / PsyClaw - DO NOT COMMIT LIVE DATA
+############################################
+# Gateways: state/config often contains tokens, paired devices, etc.
+gw-*/config/
+**/gw-*/config/
+gw-admin/config/
+**/gw-admin/config/
+
+# Runner: jobs, spool, outputs are live data
+runner/jobs/
+**/runner/jobs/
+runner/audit/
+**/runner/audit/
+runner/reports/
+**/runner/reports/
+runner/logs/
+**/runner/logs/
+
+# Postgres / DB data (never commit)
+postgres/
+**/postgres/
+pgdata/
+**/pgdata/
+*.sql
+*.dump
+*.backup
+
+# Workspaces / user work dirs
+workspaces/
+**/workspaces/
+workspace/
+**/workspace/
+
+# Local clones / upstream mirrors (keep infra code only)
+repo/
+**/repo/
+upstream-openclaw/
+**/upstream-openclaw/
+
+# Docker / compose state
+**/*-data/
+**/*_data/
+**/data/
+**/cache/
+**/volumes/
