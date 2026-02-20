@@ -45,6 +45,12 @@ services:
     volumes:
       - /srv/data/openclaw/runner:/runner-data
       - /srv/cache/openclaw/runner:/runner-cache
+      # Workspaces (read-only) — sources for audit inputs
+      - /srv/data/openclaw/gw-admin/workspace:/workspaces/gw-admin:ro
+      - /srv/data/openclaw/gw-psy/workspace:/workspaces/gw-psy:ro
+      - /srv/data/openclaw/gw-wife/workspace:/workspaces/gw-wife:ro
+      - /srv/data/openclaw/gw-kids/workspace:/workspaces/gw-kids:ro
+      - /srv/data/openclaw/gw-family/workspace:/workspaces/gw-family:ro
     ports:
       - "127.0.0.1:18888:8080"
     command:
