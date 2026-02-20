@@ -1,0 +1,5 @@
+.env
+.env.*
+config/openclaw.json
+config/openclaw.json.bak*
+config/logs/*
