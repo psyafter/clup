@@ -171,12 +171,18 @@ do
     continue
   fi
 
-  if [ -e "$live" ] || [ -L "$live" ]; then
-    cp -a "$live" "${live}.bak.${ts}"
-    rm -f "$live"
+  mkdir -p "$(dirname "$live")"
+
+  if [ -L "$live" ] && [ "$(readlink "$live")" = "$repo" ]; then
+    echo "ok: already linked -> $live"
+    continue
   fi
 
-  ln -s "$repo" "$live"
+  if [ -e "$live" ] || [ -L "$live" ]; then
+    cp -a "$live" "${live}.bak.${ts}"
+  fi
+
+  ln -sfn "$repo" "$live"
 done
 ```
 
