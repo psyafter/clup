@@ -39,13 +39,16 @@ type JobRequest struct {
 }
 
 type JobStatus struct {
-	ID         string    `json:"id"`
-	Type       string    `json:"type"`
-	State      string    `json:"state"`
-	CreatedAt  time.Time `json:"created_at"`
-	StartedAt  time.Time `json:"started_at,omitempty"`
-	FinishedAt time.Time `json:"finished_at,omitempty"`
-	Message    string    `json:"message,omitempty"`
+	ID            string    `json:"id"`
+	Type          string    `json:"type"`
+	State         string    `json:"state"`
+	CreatedAt     time.Time `json:"created_at"`
+	StartedAt     time.Time `json:"started_at,omitempty"`
+	FinishedAt    time.Time `json:"finished_at,omitempty"`
+	Message       string    `json:"message,omitempty"`
+	ResultVerdict string    `json:"result_verdict,omitempty"` // ALLOW | ALLOW_WITH_CONDITIONS | BLOCK
+	ResultSummary string    `json:"result_summary,omitempty"`
+	FindingsCount int       `json:"findings_count,omitempty"`
 }
 
 type Server struct {
@@ -404,6 +407,19 @@ func (s *Server) runJob(ctx context.Context, jobID string) {
 	}
 
 	_ = s.updateStatus(jobID, func(st *JobStatus) {
+		// Attach small result summary for "decision making" without embedding full reports/logs.
+		if jobType == "gradle_safety" {
+			vp := filepath.Join(s.jobDir(jobID), "artifacts", "verdict.json")
+			if vb, err := os.ReadFile(vp); err == nil {
+				var gv GradleSafetyVerdict
+				if err := json.Unmarshal(vb, &gv); err == nil {
+					st.ResultVerdict = string(gv.Verdict)
+					st.ResultSummary = gv.Summary
+					st.FindingsCount = len(gv.Findings)
+				}
+			}
+		}
+
 		st.State = statusSucceeded
 		st.FinishedAt = time.Now().UTC()
 		st.Message = "succeeded"
