@@ -135,7 +135,79 @@ sudo chown -R psy:psy /srv/data/openclaw/runner
 sudo chown -R psy:psy /srv/cache/openclaw/runner
 ```
 
-### 5.3 Socket Proxy + Runner compose (current)
+### 5.3 Git Repo (clup) and Live Directories: Safe Sync
+
+The public repo (`https://github.com/psyafter/clup`) must contain **only IaC + source code**.
+Live runtime state stays under `/srv/data/openclaw` (gateways, runner state, postgres data, caches, workspaces) and must never be committed.
+
+Why this matters:
+- Prevents accidental commit of live data/secrets.
+- Avoids destructive git operations in the live root (for example checkout/reset/clean that can overwrite runtime files).
+- Keeps a clear split: **git-tracked desired config** in `/srv/data/openclaw/clup`, **runtime state** in service directories.
+
+#### Preferred pattern: track compose in repo, use symlinks in live paths
+
+Clone (once):
+
+```bash
+cd /srv/data/openclaw && git clone https://github.com/psyafter/clup clup
+```
+
+Create symlinks with per-file safety backup (`.bak.<timestamp>`), only when source file exists:
+
+```bash
+ts="$(date +%Y%m%d-%H%M%S)"
+
+for pair in \
+  "/srv/data/openclaw/runner/compose/docker-compose.yml:/srv/data/openclaw/clup/runner/compose/docker-compose.yml" \
+  "/srv/data/openclaw/infra/docker-compose.yml:/srv/data/openclaw/clup/infra/docker-compose.yml" \
+  "/srv/data/openclaw/gw-admin/docker-compose.yml:/srv/data/openclaw/clup/gw-admin/docker-compose.yml"
+do
+  live="${pair%%:*}"
+  repo="${pair##*:}"
+
+  if [ ! -e "$repo" ]; then
+    echo "skip: repo file missing -> $repo"
+    continue
+  fi
+
+  if [ -e "$live" ] || [ -L "$live" ]; then
+    cp -a "$live" "${live}.bak.${ts}"
+    rm -f "$live"
+  fi
+
+  ln -s "$repo" "$live"
+done
+```
+
+Verification (symlink targets + compose sanity):
+
+```bash
+ls -la \
+  /srv/data/openclaw/runner/compose/docker-compose.yml \
+  /srv/data/openclaw/infra/docker-compose.yml \
+  /srv/data/openclaw/gw-admin/docker-compose.yml
+
+docker compose -f /srv/data/openclaw/runner/compose/docker-compose.yml config >/dev/null && echo "runner compose OK"
+docker compose -f /srv/data/openclaw/infra/docker-compose.yml config >/dev/null && echo "infra compose OK"
+docker compose -f /srv/data/openclaw/gw-admin/docker-compose.yml config >/dev/null && echo "gw-admin compose OK"
+```
+
+#### Optional fallback: deploy by copy (rsync)
+
+Use only when symlinks are not desired for a specific path:
+
+```bash
+rsync -av /srv/data/openclaw/clup/runner/compose/ /srv/data/openclaw/runner/compose/
+```
+
+#### Safety warning
+
+- Never commit: `.env`, `gw-admin/config`, postgres data, runner jobs/state.
+- Never run `git clean -fdx` in `/srv/data/openclaw`.
+- Avoid running git checkout/reset from `/srv/data/openclaw` root; use `/srv/data/openclaw/clup` as the git working tree.
+
+### 5.4 Socket Proxy + Runner compose (current)
 File:
 - `/srv/data/openclaw/runner/compose/docker-compose.yml`
 
@@ -155,7 +227,7 @@ cd /srv/data/openclaw/runner/compose
 docker compose up -d
 ```
 
-### 5.4 Verify proxy connectivity
+### 5.5 Verify proxy connectivity
 From inside runner container:
 
 ```bash
@@ -165,7 +237,7 @@ docker exec -it dkr-claw-runner sh -lc 'apk add --no-cache curl >/dev/null && cu
 Expected output:
 - `OK`
 
-### 5.5 Go Runner MVP (current)
+### 5.6 Go Runner MVP (current)
 Runner source:
 - `/srv/data/openclaw/runner/runner-go/`
 
@@ -197,4 +269,3 @@ Expected:
 - Restart policy: `unless-stopped`
 
 ---
-
