@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: dkr-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: "KUYBCprWUrYKPp30qakB"
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "postgres"
+    volumes:
+      - /srv/data/postgres/data:/var/lib/postgresql/data
+    networks:
+      - dkrnet-infra
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  dkrnet-infra:
+    external: true
