@@ -48,7 +48,7 @@ type JobStatus struct {
 	Message       string    `json:"message,omitempty"`
 	ResultVerdict string    `json:"result_verdict,omitempty"` // ALLOW | ALLOW_WITH_CONDITIONS | BLOCK
 	ResultSummary string    `json:"result_summary,omitempty"`
-	FindingsCount int       `json:"findings_count,omitempty"`
+	FindingsCount int       `json:"findings_count"`
 }
 
 type Server struct {
