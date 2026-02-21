@@ -2,6 +2,8 @@ services:
   gw-family:
     container_name: dkr-gw-family
     image: ${OPENCLAW_IMAGE:-openclaw:local}
+    env_file:
+      - .env
     environment:
       HOME: /home/node
       TERM: xterm-256color
@@ -14,8 +16,8 @@ services:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
     ports:
-      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:${OPENCLAW_GATEWAY_PORT}"
-      - "127.0.0.1:${OPENCLAW_BRIDGE_PORT}:${OPENCLAW_BRIDGE_PORT}"
+      - "127.0.0.1:18797:18789"
+      - "127.0.0.1:18798:18790"
     init: true
     restart: unless-stopped
     command:

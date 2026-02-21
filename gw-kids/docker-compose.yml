@@ -2,6 +2,8 @@ services:
   gw-kids:
     container_name: dkr-gw-kids
     image: ${OPENCLAW_IMAGE:-openclaw:local}
+    env_file:
+      - .env
     environment:
       HOME: /home/node
       TERM: xterm-256color
@@ -14,8 +16,8 @@ services:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
     ports:
-      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:${OPENCLAW_GATEWAY_PORT}"
-      - "127.0.0.1:${OPENCLAW_BRIDGE_PORT}:${OPENCLAW_BRIDGE_PORT}"
+      - "127.0.0.1:18791:18789"
+      - "127.0.0.1:18792:18790"
     init: true
     restart: unless-stopped
     command:
@@ -28,6 +30,9 @@ services:
         "--port",
         "${OPENCLAW_GATEWAY_PORT}"
       ]
+    networks:
+      - dkrnet-kids
+      - dkrnet-infra
 
 networks:
   dkrnet-kids:
